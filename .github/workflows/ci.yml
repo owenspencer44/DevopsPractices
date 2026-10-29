@@ -1,13 +1,12 @@
 name: CI
 
-# Runs every time something is pushed to the dev branch
+# Runs every time something is pushed to main
 on:
   push:
-    branches: [dev]
+    branches: [main]
 
-# Lets the workflow push to main when the checks pass
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   checks:
@@ -22,19 +21,3 @@ jobs:
 
       - name: Run pipeline.yml
         run: ./run-pipeline.sh
-
-  merge-to-main:
-    name: Merge dev into main
-    needs: checks   # only runs if every check passed
-    runs-on: ubuntu-latest
-    steps:
-      - name: Get the code
-        uses: actions/checkout@v4
-        with:
-          ref: main
-          fetch-depth: 0
-
-      - name: Fast-forward main to the tested commit
-        run: |
-          git merge --ff-only ${{ github.sha }}
-          git push origin main
