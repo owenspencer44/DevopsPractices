@@ -1,4 +1,4 @@
-# GitHub Actions CI Pipeline
+#GitHub Actions CI Pipeline
 
 This repo uses a single `main` branch, with a **CI (Continuous Integration) pipeline** run at two checkpoints:
 
@@ -101,7 +101,7 @@ and dispatches each step into the `mylinux` container using `docker exec`.
 | C# syntax | `dotnet build` on a temp project containing all non-test `.cs` files | Compiler errors |
 | Unit tests | `dotnet test` on every `*.Tests.csproj` | Any `[Fact]` / `[Theory]` assertion fails |
 
-Stages with no matching files (for example, no `.js` files) print `skipping` and pass.
+Stages with no matching files (for example, no `.js` files or no test projects yet) print `skipping` and pass.
 
 ---
 
@@ -144,8 +144,7 @@ The CI run is the **verification**: it proves the code passes on a clean machine
 | [`.github/workflows/ci.yml`](.github/workflows/ci.yml) | **Workflow definition.** Trigger (`on: push: branches: [main]`), job, runner |
 | [`pipeline.yml`](pipeline.yml) | **Pipeline definition.** Ordered list of steps (`name` + `run`) and target `container` |
 | [`run-pipeline.sh`](run-pipeline.sh) | **Pipeline runner.** Parses `pipeline.yml` and runs each step via `docker exec` |
-| [`Calculator/`](Calculator/) | Sample application code (class library) |
-| [`Calculator.Tests/`](Calculator.Tests/) | xUnit test project: the **logic check** |
+| `*.Tests/` *(none yet)* | xUnit test projects: the **logic check**. Any folder with a `*.Tests.csproj` is picked up automatically |
 | [`.gitignore`](.gitignore) | Excludes build output (`bin/`, `obj/`) |
 | `.git/hooks/pre-push` | **Local gate.** Reads the refs being pushed from stdin; for `refs/heads/main` it runs `run-pipeline.sh` and exits 1 on failure |
 
