@@ -1,0 +1,21 @@
+name: SyntaxPipeline
+container: mylinux
+
+steps:
+  - name: Say hello
+    run: echo "hello world from $(hostname)"
+
+  - name: Install tools
+    run: apt-get update -qq && DEBIAN_FRONTEND=noninteractive apt-get install -y -qq nodejs dotnet-sdk-8.0 > /dev/null
+
+  - name: Check JavaScript syntax
+    run: if [ -z "$(find /work -name '*.js' -not -path '*/node_modules/*')" ]; then echo "No JavaScript files found, skipping"; else find /work -name "*.js" -not -path "*/node_modules/*" -print0 | xargs -0 -n1 node --check && echo "JavaScript syntax OK"; fi
+
+  - name: Check C# syntax
+    run: if [ -z "$(find /work -name '*.cs' -not -path '*/bin/*' -not -path '*/obj/*' -not -path '*.Tests/*')" ]; then echo "No C# files found, skipping"; else d=$(mktemp -d) && echo '<Project Sdk="Microsoft.NET.Sdk"><PropertyGroup><OutputType>Exe</OutputType><TargetFramework>net8.0</TargetFramework></PropertyGroup></Project>' > $d/check.csproj && cp $(find /work -name "*.cs" -not -path "*/bin/*" -not -path "*/obj/*" -not -path "*.Tests/*") $d/ && dotnet build $d -nologo -v q; fi
+
+  - name: Run unit tests
+    run: if [ -z "$(find /work -name '*.Tests.csproj' -not -path '*/bin/*' -not -path '*/obj/*')" ]; then echo "No test projects found, skipping"; else for p in $(find /work -name '*.Tests.csproj' -not -path '*/bin/*' -not -path '*/obj/*'); do dotnet test "$p" --nologo -v q || exit 1; done; fi
+
+  - name: Done
+    run: echo "All syntax checks and unit tests passed"
